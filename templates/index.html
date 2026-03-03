@@ -116,67 +116,75 @@
             </div>
 
             <div class="tab-pane fade" id="doc" role="tabpanel">
-    <div class="grid-container">
-        
-        <div class="translator-card">
+            <div class="grid-container">
+                
+                <div class="translator-card">
+                    <div class="column-header mb-3">
+                        <span class="column-label text-secondary fw-bold">Modeling</span>
+                    </div>
+                    <div class="translator-box doc-box">
+                        <h6 class="doc-accent"><i class="bi bi-cpu"></i> XGBoost Regression</h6>
+                        <p>This system utilizes 
+                                    <a href="https://github.com/Doug-Vo/Weather-Predictor/blob/main/Data_pipeline.ipynb" 
+                            target="_blank" 
+                            style="color: #60A5FA; text-decoration: underline; font-weight: 500;">
+                            XGBoost Model
+                            </a> optimized for multi-output temperature forecasting.
+                        </p>
+                            
+                        <p class="mb-0">The model was trained on data points of multiple observation centers from the 
+                                    <a href="https://github.com/pnuu/fmiopendata" 
+                            target="_blank" 
+                            style="color: #60A5FA; text-decoration: underline; font-weight: 500;">
+                            FMI Open Data
+                            </a> portal.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="translator-card">
+                    <div class="column-header mb-3">
+                        <span class="column-label text-secondary fw-bold">Infrastructure</span>
+                    </div>
+                    <div class="translator-box doc-box">
+                        <h6 class="doc-accent"><i class="bi bi-database"></i> WFS & MongoDB</h6>
+                        <p>Observations are fetched via <b>WFS requests</b>. Feature engineering occurs in a Python worker.</p>
+                        <p class="mb-0">Historical persistence is managed by <code>MongoDB Atlas</code> to ensure robust handling of sensor gaps.</p>
+                    </div>
+                </div>
+
+                <div class="translator-card">
             <div class="column-header mb-3">
-                <span class="column-label text-secondary fw-bold">Modeling</span>
+                <span class="column-label text-secondary fw-bold">Engineering</span>
             </div>
             <div class="translator-box doc-box">
-                <h6 class="doc-accent"><i class="bi bi-cpu"></i> XGBoost Regression</h6>
-                <p>This system utilizes an <code>XGBoost</code> model optimized for multi-output temperature forecasting</p>
-                <p class="mb-0">The model was trained on high-resolution data points sourced from the 
-                            <a href="https://github.com/pnuu/fmiopendata" 
-                    target="_blank" 
-                    style="color: #60A5FA; text-decoration: underline; font-weight: 500;">
-                    FMI Open Data
-                    </a> portal.
-                </p>
+                <h6 class="doc-accent mb-3"><i class="bi bi-gear-fill"></i> Predictor Features</h6>
+                <ul class="ps-3" style="list-style-type: disc; margin: 0; padding-left: 1.2rem;">
+                    <li class="mb-2">
+                        <b class="text-white" style="font-size: 0.95rem;">Temp Rolling Mean:</b> 
+                        <span style="color: #D1D5DB; font-size: 0.95rem;">Identifies thermal inertia.</span>
+                    </li>
+                    <li class="mb-2">
+                        <b class="text-white" style="font-size: 0.95rem;">Pressure Delta:</b> 
+                        <span style="color: #D1D5DB; font-size: 0.95rem;">Signals low-pressure fronts.</span>
+                    </li>
+                    <li class="mb-0">
+                        <b class="text-white" style="font-size: 0.95rem;">Temporal Encoding:</b> 
+                        <span style="color: #D1D5DB; font-size: 0.95rem;">Sine/Cosine 24h mapping.</span>
+                    </li>
+                </ul>
             </div>
         </div>
-
-        <div class="translator-card">
-            <div class="column-header mb-3">
-                <span class="column-label text-secondary fw-bold">Infrastructure</span>
-            </div>
-            <div class="translator-box doc-box">
-                <h6 class="doc-accent"><i class="bi bi-database"></i> WFS & MongoDB</h6>
-                <p>Observations are fetched via <b>WFS requests</b>. Feature engineering occurs in a Python worker.</p>
-                <p class="mb-0">Historical persistence is managed by <code>MongoDB Atlas</code> to ensure robust handling of sensor gaps.</p>
-            </div>
-        </div>
-
-        <div class="translator-card">
-    <div class="column-header mb-3">
-        <span class="column-label text-secondary fw-bold">Engineering</span>
-    </div>
-    <div class="translator-box doc-box">
-        <h6 class="doc-accent mb-3"><i class="bi bi-gear-fill"></i> Predictor Features</h6>
-        <ul class="ps-3" style="list-style-type: disc; margin: 0; padding-left: 1.2rem;">
-            <li class="mb-2">
-                <b class="text-white" style="font-size: 0.95rem;">Temp Rolling Mean:</b> 
-                <span style="color: #D1D5DB; font-size: 0.95rem;">Identifies thermal inertia.</span>
-            </li>
-            <li class="mb-2">
-                <b class="text-white" style="font-size: 0.95rem;">Pressure Delta:</b> 
-                <span style="color: #D1D5DB; font-size: 0.95rem;">Signals low-pressure fronts.</span>
-            </li>
-            <li class="mb-0">
-                <b class="text-white" style="font-size: 0.95rem;">Temporal Encoding:</b> 
-                <span style="color: #D1D5DB; font-size: 0.95rem;">Sine/Cosine 24h mapping.</span>
-            </li>
-        </ul>
-    </div>
-</div>
 
         <div class="translator-card">
             <div class="column-header mb-3">
                 <span class="column-label text-secondary fw-bold">Pipeline</span>
             </div>
             <div class="translator-box doc-box">
-                <h6 class="doc-accent"><i class="bi bi-arrow-repeat"></i> GitHub Actions</h6>
-                <p>An automated worker runs hourly via <b>GitHub Actions</b>. It validates sensor data and performs inference.</p>
-                <p class="mb-0">The cycle concludes by upserting the newest results to the cloud database.</p>
+                <h6 class="doc-accent"><i class="bi bi-cpu"></i> Infrastructure</h6>
+                <p><b>GitHub Actions:</b> Hourly data fetching and ML inference.</p>
+                <p><b>Docker:</b> Containerized environment for consistent performance.</p>
+                <p class="mb-0"><b>Azure:</b> Secure cloud hosting and real-time dashboard delivery.</p>
             </div>
         </div>
 
