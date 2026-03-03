@@ -1,0 +1,18 @@
+# Web Server & Timezones
+flask
+gunicorn
+pytz
+
+# Database
+pymongo
+dnspython
+
+# Data Science & ML
+pandas
+numpy
+joblib
+xgboost
+scikit-learn
+
+# Weather API
+fmiopendata
