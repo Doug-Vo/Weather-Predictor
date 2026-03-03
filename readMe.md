@@ -54,3 +54,6 @@ The goal of this project is to build a  machine learning pipeline that predicts 
 ### **How to Use**
 
 *To be updated*
+
+
+![Status](https://github.com/[Your-Username]/[Your-Repo-Name]/actions/workflows/worker.yml/badge.svg)

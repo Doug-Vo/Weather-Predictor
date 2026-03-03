@@ -15,6 +15,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+print(f"--- Job started at {datetime.datetime.now()} ---")
 # Paths
 MODEL_PATH = os.path.join("models/weather_model_1to3h.joblib")
 MONGO_URI = os.getenv("MONGO_URI")
