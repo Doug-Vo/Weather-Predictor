@@ -3,197 +3,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Predictor | Unified Dashboard</title>
+    <title>Weather Predictor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #111827; color: #F9FAFB; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #111827; color: #fdfdfd; min-height: 100vh; }
         
-        /* App Header */
+
         .app-header { width: 100%; background-color: #1F2937; border-bottom: 1px solid #374151; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; }
         .header-container { display: flex; align-items: center; justify-content: space-between; max-width: 85rem; margin: 0 auto; }
         .header-title { font-size: 1.5rem; font-weight: 700; color: #F9FAFB; margin: 0; }
-        
-        /* Tabs Navigation - Button style */
+
         .nav-tabs { border-bottom: none; gap: 0.5rem; }
-        .nav-link { color: #9CA3AF !important; border: none !important; border-radius: 0.5rem !important; transition: all 0.2s; padding: 0.6rem 1rem !important; }
+        .nav-link { color: #F9FAFB !important; border: none !important; border-radius: 0.5rem !important; transition: all 0.2s; padding: 0.6rem 1rem !important; }
         .nav-link.active { background-color: #374151 !important; color: #60A5FA !important; font-weight: 600; }
         .nav-link:hover:not(.active) { background-color: rgba(55, 65, 81, 0.5); color: #F9FAFB !important; }
 
-        /* Social Links */
         .header-socials { display: flex; gap: 1.5rem; }
-        .header-socials a { color: #9CA3AF; text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+        .header-socials a { color: #F9FAFB; text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
         .header-socials a:hover { color: #F9FAFB; }
 
-        /* Content Layout */
         .container { max-width: 85rem; margin: 2rem auto; padding: 0 2rem; }
-        
-        /* THE KEY: UNIFIED GRID SYSTEM */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem; }
-        
-        /* CARD ANIMATION & STYLING (Shared by Forecast and Doc) */
-        .translator-card { 
-            background-color: #1F2937; 
-            border-radius: 0.75rem; 
-            padding: 1.5rem; 
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.8rem; }
+
+        .translator-card {
+            background-color: #1F2937;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
             border: 1px solid #374151;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Professional easing */
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
-            overflow: hidden;
             height: 100%;
-            cursor: default;
+        }
+        .translator-card:hover {
+            transform: translateY(-6px);
+            border-color: #60A5FA;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.4), 0 10px 10px rgba(0,0,0,0.3);
         }
 
-        /* The Hover Effect */
-        .translator-card:hover { 
-            transform: translateY(-8px); /* Lifts up */
-            border-color: #60A5FA; /* Glows blue */
-            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.3); /* Deeper shadow */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.8rem;
         }
 
-        /* Standard Card Inset Box */
-        .translator-box { background-color: #374151; border-radius: 0.5rem; padding: 1.25rem; border: 1px solid #4B5563; }
-        
-        /* Forecast specific styles */
-        .temp-val { font-size: 2.5rem; font-weight: 800; color: #60A5FA; }
-        .prediction-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid #4B5563; font-size: 0.95rem; }
-        .prediction-item:last-child { border-bottom: none; color: #34D399; font-weight: 600; }
+        .translator-box { background-color: #374151; border-radius: 0.5rem; padding: 1.25rem; border: 1px solid #4B5563; overflow: visible; position: relative; }
 
-        /* Documentation specific styles */
+        /* Current conditions */
+        .temp-val { font-size: 2.8rem; font-weight: 800; color: #60A5FA; line-height: 1; }
+        .code-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-weight: 600; margin-top: 0.4rem; }
+        .code-clear { background-color: rgba(251,191,36,0.15); color: #FBBF24; }
+        .code-rain  { background-color: rgba(96,165,250,0.15); color: #60A5FA; }
+        .code-snow  { background-color: rgba(167,243,208,0.15); color: #A7F3D0; }
+
+        /* Forecast table */
+        .forecast-table { width: 100%; font-size: 0.875rem; border-collapse: separate; border-spacing: 0; }
+        .forecast-table th { color: #F9FAFB; font-weight: 500; padding: 0.4rem 0.5rem; text-align: left; border-bottom: 1px solid #4B5563; }
+        .forecast-table td { padding: 0.5rem 0.5rem; border-bottom: 1px solid #374151; vertical-align: middle; position: relative; overflow: visible; }
+        .forecast-table tr:last-child td { border-bottom: none; }
+        .our-temp { color: #60A5FA; font-weight: 700; }
+        .fmi-temp  { color: #34D399; font-weight: 700; }
+        .section-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #F9FAFB; margin: 1rem 0 0.5rem; }
+
+        /* Doc styles */
         .doc-accent { color: #60A5FA; font-weight: 600; font-size: 1rem; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .doc-box p { font-size: 0.9rem; line-height: 1.5; color: #D1D5DB; }
+        .doc-box p { font-size: 0.9rem; line-height: 1.5; color: #F9FAFB; }
+        ul li span { color: #F9FAFB !important; }
+
+        .doc-box { color: #F9FAFB; }
+        .doc-box p, 
+        .doc-box li, 
+        .doc-box td, 
+        .doc-box span { color: #F9FAFB; }
         code { background-color: #111827; color: #34D399; padding: 0.2rem 0.4rem; border-radius: 0.3rem; }
+
+        .legend { display: flex; gap: 1rem; font-size: 0.75rem; color: #F9FAFB; margin-top: 0.75rem; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+        /* ── Info button + tooltip ── */
+        .metric-info-wrap { position: relative; display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 0.4rem; padding: 0.1rem 0; }
+        .metric-horizon { font-size: 0.8rem; font-weight: 600; color: #F9FAFB; }
+        .info-btn { background: none; border: none; padding: 0; cursor: pointer; color: #60A5FA; font-size: 0.95rem; position: relative; display: flex; align-items: center; }
+        .info-btn:hover { color: #93C5FD; }
+
+        .metric-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            background: #1F2937;
+            border: 1px solid #4B5563;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            min-width: 220px;
+            z-index: 9999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        .metric-info-wrap:hover .metric-tooltip,
+        .info-btn:focus .metric-tooltip { display: block; }
+
+        .tt-title { font-size: 0.78rem; font-weight: 700; color: #60A5FA; margin-bottom: 0.5rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+        .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #F9FAFB; padding: 0.2rem 0; }
+        .tt-val { font-weight: 700; color: #34D399; }
+        .tt-plain { font-size: 0.82rem; color: #F9FAFB; padding: 0.2rem 0; }
+        .tt-highlight { color: #34D399; font-weight: 700; }
+        .tt-snow { color: #A7F3D0; font-weight: 600; }
+        .tt-rain { color: #60A5FA; font-weight: 600; }
+        .tt-table { width: 100%; font-size: 0.78rem; border-collapse: collapse; color: #F9FAFB; }
+        .tt-table th { color: #9CA3AF; font-weight: 500; padding: 0.2rem 0.3rem; text-align: center; border-bottom: 1px solid #374151; }
+        .tt-table td { padding: 0.25rem 0.3rem; text-align: center; }
+        .tt-table tr td:first-child { text-align: left; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .app-header { padding: 0.75rem 1rem; }
+            .header-container { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+            .header-title { font-size: 1.2rem; }
+            .header-socials { display: none; }
+            .nav-link { padding: 0.4rem 0.75rem !important; font-size: 0.85rem; }
+            .grid-container { grid-template-columns: 1fr; gap: 1rem; }
+            .grid-2col { grid-template-columns: 1fr; gap: 1rem; }
+            .container { padding: 0 1rem; margin: 1rem auto; }
+            .temp-val { font-size: 2.2rem; }
+            .translator-card { padding: 1rem; }
+            .translator-box { padding: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .header-title { font-size: 1rem; }
+            .nav-link { padding: 0.35rem 0.6rem !important; font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
 
-    <header class="app-header">
-        <div class="header-container">
-            <h1 class="header-title">Weather Predictor</h1>
-            
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link active" id="forecast-tab" data-bs-toggle="tab" data-bs-target="#forecast" type="button" role="tab">
-                        <i class="bi bi-cloud-sun me-1"></i> Forecast
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="doc-tab" data-bs-toggle="tab" data-bs-target="#doc" type="button" role="tab">
-                        <i class="bi bi-file-earmark-text me-1"></i> Documentation
-                    </button>
-                </li>
-            </ul>
-
-            <div class="header-socials">
-                <a href="https://github.com/Doug-Vo" target="_blank"><i class="bi bi-github"></i> GitHub</a>
-                <a href="https://www.linkedin.com/in/nguyen-thien-duc-vo" target="_blank"><i class="bi bi-linkedin"></i> LinkedIn</a>
-            </div>
+<header class="app-header">
+    <div class="header-container">
+        <h1 class="header-title">Weather Predictor.v2</h1>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="forecast-tab" data-bs-toggle="tab" data-bs-target="#forecast" type="button" role="tab">
+                    <i class="bi bi-cloud-sun me-1"></i> Forecast
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="doc-tab" data-bs-toggle="tab" data-bs-target="#doc" type="button" role="tab">
+                    <i class="bi bi-file-earmark-text me-1"></i> Documentation
+                </button>
+            </li>
+        </ul>
+        <div class="header-socials">
+            <a href="https://github.com/Doug-Vo" target="_blank"><i class="bi bi-github"></i> GitHub</a>
+            <a href="https://www.linkedin.com/in/nguyen-thien-duc-vo" target="_blank"><i class="bi bi-linkedin"></i> LinkedIn</a>
         </div>
-    </header>
+    </div>
+</header>
 
-    <main class="container">
-        <div class="tab-content" id="myTabContent">
-            
-            <div class="tab-pane fade show active" id="forecast" role="tabpanel">
-                <div class="grid-container">
-                    {% for f in forecasts %}
-                    <div class="translator-card">
-                        <span class="fw-bold d-block mb-3 text-secondary">{{ f.city }}</span>
-                        <div class="translator-box">
-                            <div class="temp-val">{{ f.actual_data.air_temperature }}°C</div>
-                            <div class="small mb-3" style="color: #79a832;">Observed: {{ f.display_time }}</div>
-                            <div class="prediction-list">
-                                <div class="prediction-item"><span>In 1 Hour</span><span>{{ f.predictions['1h'] }}°C</span></div>
-                                <div class="prediction-item"><span>In 2 Hours</span><span>{{ f.predictions['2h'] }}°C</span></div>
-                                <div class="prediction-item"><span>In 3 Hours</span><span>{{ f.predictions['3h'] }}°C</span></div>
+<main class="container">
+    <div class="tab-content" id="myTabContent">
+
+        <!-- ── Forecast Tab ── -->
+        <div class="tab-pane fade show active" id="forecast" role="tabpanel">
+            <div class="grid-container">
+                {% for f in forecasts %}
+                <div class="translator-card">
+
+                    <!-- City + timestamp -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold text-white" style="font-size: 1.1rem;">{{ f.city }}</span>
+                        <span class="small" style="color:#F9FAFB">{{ f.display_time }}</span>
+                    </div>
+
+                    <!-- Current conditions -->
+                    <div class="translator-box mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="temp-val">{{ f.current.temp }}°C</div>
+                                <span class="code-badge code-{{ f.current.code_label | lower }}">
+                                    <i class="bi {{ f.current.code_icon }}"></i>
+                                    {{ f.current.code_label }}
+                                </span>
+                            </div>
+                            <div class="text-end small" style="color:#F9FAFB">
+                                <div><i class="bi bi-droplet me-1"></i>{{ f.current.humidity }}%</div>
+                                <div><i class="bi bi-speedometer2 me-1"></i>{{ f.current.pressure }} hPa</div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <div class="tab-pane fade" id="doc" role="tabpanel">
-            <div class="grid-container">
-                
-                <div class="translator-card">
-                    <div class="column-header mb-3">
-                        <span class="column-label text-secondary fw-bold">Modeling</span>
+                    <!-- Temperature forecast comparison -->
+                    <div class="section-label">Temperature Forecast</div>
+                    <div class="translator-box mb-3">
+                        <table class="forecast-table">
+                            <thead>
+                                <tr>
+                                    <th>Horizon</th>
+                                    <th class="our-temp">Our Model</th>
+                                    <th class="fmi-temp">FMI Harmonie</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="metric-info-wrap">
+                                            <span class="metric-horizon">+6h</span>
+                                            <button class="info-btn" tabindex="0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <div class="metric-tooltip">
+                                                    <div class="tt-title"><i class="bi bi-thermometer-half me-1" style="color:#60A5FA"></i>Temperature +6h</div>
+                                                    <div class="tt-plain"><span class="tt-highlight">±0.99°C</span> typical error</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="our-temp">{{ f.temp_forecast['6h'] }}°C</td>
+                                    <td class="fmi-temp">{{ f.fmi_forecast.get('6h', {}).get('temp', '—') }}°C</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="metric-info-wrap">
+                                            <span class="metric-horizon">+12h</span>
+                                            <button class="info-btn" tabindex="0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <div class="metric-tooltip">
+                                                    <div class="tt-title"><i class="bi bi-thermometer-half me-1" style="color:#60A5FA"></i>Temperature +12h</div>
+                                                    <div class="tt-plain"><span class="tt-highlight">±1.59°C</span> typical error</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="our-temp">{{ f.temp_forecast['12h'] }}°C</td>
+                                    <td class="fmi-temp">{{ f.fmi_forecast.get('12h', {}).get('temp', '—') }}°C</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="metric-info-wrap">
+                                            <span class="metric-horizon">+24h</span>
+                                            <button class="info-btn" tabindex="0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <div class="metric-tooltip">
+                                                    <div class="tt-title"><i class="bi bi-thermometer-half me-1" style="color:#60A5FA"></i>Temperature +24h</div>
+                                                    <div class="tt-plain"><span class="tt-highlight">±2.41°C</span> typical error</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="our-temp">{{ f.temp_forecast['24h'] }}°C</td>
+                                    <td class="fmi-temp">{{ f.fmi_forecast.get('24h', {}).get('temp', '—') }}°C</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="legend">
+                            <span><span class="legend-dot" style="background:#60A5FA"></span>Our Model</span>
+                            <span><span class="legend-dot" style="background:#34D399"></span>FMI Harmonie</span>
+                        </div>
                     </div>
-                    <div class="translator-box doc-box">
-                        <h6 class="doc-accent"><i class="bi bi-cpu"></i> XGBoost Regression</h6>
-                        <p>This system utilizes 
-                                    <a href="https://github.com/Doug-Vo/Weather-Predictor/blob/main/Data_pipeline.ipynb" 
-                            target="_blank" 
-                            style="color: #60A5FA; text-decoration: underline; font-weight: 500;">
-                            XGBoost Model
-                            </a> optimized for multi-output temperature forecasting.
-                        </p>
-                            
-                        <p class="mb-0">The model was trained on data points of multiple observation centers from the 
-                                    <a href="https://github.com/pnuu/fmiopendata" 
-                            target="_blank" 
-                            style="color: #60A5FA; text-decoration: underline; font-weight: 500;">
-                            FMI Open Data
-                            </a> portal.
-                        </p>
-                    </div>
-                </div>
 
-                <div class="translator-card">
-                    <div class="column-header mb-3">
-                        <span class="column-label text-secondary fw-bold">Infrastructure</span>
+                    <!-- Weather code forecast comparison -->
+                    <div class="section-label">Weather Code Forecast</div>
+                    <div class="translator-box">
+                        <table class="forecast-table">
+                            <thead>
+                                <tr>
+                                    <th>Horizon</th>
+                                    <th class="our-temp">Our Model</th>
+                                    <th class="fmi-temp">FMI Harmonie</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="metric-info-wrap">
+                                            <span class="metric-horizon">+3h</span>
+                                            <button class="info-btn" tabindex="0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <div class="metric-tooltip">
+                                                    <div class="tt-title"><i class="bi bi-cloud-sun me-1" style="color:#34D399"></i>Weather Code +3h</div>
+                                                    <div class="tt-plain"><span class="tt-snow">❄ Snow:</span> catches <span class="tt-highlight">3 in 4</span> events</div>
+                                                    <div class="tt-plain"><span class="tt-snow">❄ Snow:</span> <span class="tt-highlight">50%</span> of warnings correct</div>
+                                                    <div class="tt-plain"><span class="tt-rain">🌧 Rain:</span> catches <span class="tt-highlight">55%</span> of events</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="code-badge code-{{ f.code_forecast['3h_label'] | lower }}">
+                                            <i class="bi {{ f.code_forecast['3h_icon'] }}"></i>
+                                            {{ f.code_forecast['3h_label'] }}
+                                        </span>
+                                    </td>
+                                    <td style="color:#F9FAFB">—</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="metric-info-wrap">
+                                            <span class="metric-horizon">+6h</span>
+                                            <button class="info-btn" tabindex="0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <div class="metric-tooltip">
+                                                    <div class="tt-title"><i class="bi bi-cloud-sun me-1" style="color:#34D399"></i>Weather Code +6h</div>
+                                                    <div class="tt-plain"><span class="tt-snow">❄ Snow:</span> catches <span class="tt-highlight">3 in 4</span> events</div>
+                                                    <div class="tt-plain"><span class="tt-snow">❄ Snow:</span> <span class="tt-highlight">44%</span> of warnings correct</div>
+                                                    <div class="tt-plain"><span class="tt-rain">🌧 Rain:</span> catches <span class="tt-highlight">44%</span> of events</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="code-badge code-{{ f.code_forecast['6h_label'] | lower }}">
+                                            <i class="bi {{ f.code_forecast['6h_icon'] }}"></i>
+                                            {{ f.code_forecast['6h_label'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if f.fmi_forecast.get('6h') %}
+                                        <span class="code-badge code-{{ f.fmi_forecast['6h']['code_label'] | lower }}">
+                                            <i class="bi {{ f.fmi_forecast['6h']['code_icon'] }}"></i>
+                                            {{ f.fmi_forecast['6h']['code_label'] }}
+                                        </span>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="metric-info-wrap">
+                                            <span class="metric-horizon">+12h</span>
+                                            <button class="info-btn" tabindex="0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <div class="metric-tooltip">
+                                                    <div class="tt-title"><i class="bi bi-cloud-sun me-1" style="color:#34D399"></i>Weather Code +12h</div>
+                                                    <div class="tt-plain"><span class="tt-snow">❄ Snow:</span> catches <span class="tt-highlight">3 in 4</span> events</div>
+                                                    <div class="tt-plain"><span class="tt-snow">❄ Snow:</span> <span class="tt-highlight">40%</span> of warnings correct</div>
+                                                    <div class="tt-plain"><span class="tt-rain">🌧 Rain:</span> catches <span class="tt-highlight">37%</span> of events</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="code-badge code-{{ f.code_forecast['12h_label'] | lower }}">
+                                            <i class="bi {{ f.code_forecast['12h_icon'] }}"></i>
+                                            {{ f.code_forecast['12h_label'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if f.fmi_forecast.get('12h') %}
+                                        <span class="code-badge code-{{ f.fmi_forecast['12h']['code_label'] | lower }}">
+                                            <i class="bi {{ f.fmi_forecast['12h']['code_icon'] }}"></i>
+                                            {{ f.fmi_forecast['12h']['code_label'] }}
+                                        </span>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="legend">
+                            <span><span class="legend-dot" style="background:#60A5FA"></span>Our Model</span>
+                            <span><span class="legend-dot" style="background:#34D399"></span>FMI Harmonie</span>
+                        </div>
                     </div>
-                    <div class="translator-box doc-box">
-                        <h6 class="doc-accent"><i class="bi bi-database"></i> WFS & MongoDB</h6>
-                        <p>Observations are fetched via <b>WFS requests</b>. Feature engineering occurs in a Python worker.</p>
-                        <p class="mb-0">Historical persistence is managed by <code>MongoDB Atlas</code> to ensure robust handling of sensor gaps.</p>
-                    </div>
-                </div>
 
-                <div class="translator-card">
-            <div class="column-header mb-3">
-                <span class="column-label text-secondary fw-bold">Engineering</span>
-            </div>
-            <div class="translator-box doc-box">
-                <h6 class="doc-accent mb-3"><i class="bi bi-gear-fill"></i> Predictor Features</h6>
-                <ul class="ps-3" style="list-style-type: disc; margin: 0; padding-left: 1.2rem;">
-                    <li class="mb-2">
-                        <b class="text-white" style="font-size: 0.95rem;">Temp Rolling Mean:</b> 
-                        <span style="color: #D1D5DB; font-size: 0.95rem;">Identifies thermal inertia.</span>
-                    </li>
-                    <li class="mb-2">
-                        <b class="text-white" style="font-size: 0.95rem;">Pressure Delta:</b> 
-                        <span style="color: #D1D5DB; font-size: 0.95rem;">Signals low-pressure fronts.</span>
-                    </li>
-                    <li class="mb-0">
-                        <b class="text-white" style="font-size: 0.95rem;">Temporal Encoding:</b> 
-                        <span style="color: #D1D5DB; font-size: 0.95rem;">Sine/Cosine 24h mapping.</span>
-                    </li>
-                </ul>
+                </div>
+                {% endfor %}
             </div>
         </div>
 
-        <div class="translator-card">
-            <div class="column-header mb-3">
-                <span class="column-label text-secondary fw-bold">Pipeline</span>
+        <!-- ── Documentation Tab ── -->
+        <div class="tab-pane fade" id="doc" role="tabpanel">
+            <div class="grid-2col">
+
+            <div class="translator-card">
+                <div class="column-header mb-3">
+                    <span class="column-label fw-bold" style="color:#F9FAFB">Modeling</span>
+                </div>
+                <div class="translator-box doc-box">
+                    <h6 class="doc-accent"><i class="bi bi-cpu"></i> XGBoost + LightGBM</h6>
+                    <p>V2 runs two parallel model families. An <b class="text-white"><a href="https://github.com/Doug-Vo/Weather-Predictor/blob/main/v2_Notebook/temp_forecast.ipynb" target="_blank" style="color:#60A5FA">XGBoost regression</a></b> model handles temperature forecasting at +6h, +12h, and +24h horizons. </p>
+                    <p> A <b class="text-white"> <a href="https://github.com/Doug-Vo/Weather-Predictor/blob/main/v2_Notebook/code_forecast.ipynb" target="_blank" style="color:#60A5FA">LightGBM multiclass classifier</a></b> predicts weather codes (Clear / Rain / Snow) at +3h, +6h, and +12h.</p>
+                    <p class="mb-0">Both models are trained independently and run in parallel during each hourly worker cycle.</p>
+                </div>
             </div>
-            <div class="translator-box doc-box">
-                <h6 class="doc-accent"><i class="bi bi-cpu"></i> Infrastructure</h6>
-                <p><b>GitHub Actions:</b> Hourly data fetching and ML inference.</p>
-                <p><b>Docker:</b> Containerized environment for consistent performance.</p>
-                <p class="mb-0"><b>Azure:</b> Secure cloud hosting and real-time dashboard delivery.</p>
+
+            <div class="translator-card">
+                <div class="column-header mb-3">
+                    <span class="column-label fw-bold" style="color:#F9FAFB">Data</span>
+                </div>
+                <div class="translator-box doc-box">
+                    <h6 class="doc-accent"><i class="bi bi-database-check"></i> Training Dataset</h6>
+                    <p>Over <b class="text-white">120,000 city-aggregated hourly observations</b> spanning November 2023 to March 2026 across 6 Finnish cities — Oulu, Helsinki, Tampere, Turku, Rovaniemi, and Vaasa.</p>
+                    <p>Data sourced from <a href="https://github.com/pnuu/fmiopendata" target="_blank" style="color:#60A5FA">FMI Open Data</a> via dual WFS endpoints — hourly for temperature, wind and pressure, and 10-min for cloud cover and dew point.</p>
+                    <p class="mb-0">Train/val/test split uses a <b class="text-white">seasonal gap strategy</b> — validation and test sets are both full Finnish winters from different years to ensure reliable evaluation of snow and rain detection.</p>
+                </div>
+            </div>
+
+            <div class="translator-card">
+                <div class="column-header mb-3">
+                    <span class="column-label fw-bold" style="color:#F9FAFB">Engineering</span>
+                </div>
+                <div class="translator-box doc-box">
+                    <h6 class="doc-accent mb-3"><i class="bi bi-gear-fill"></i> Feature Set</h6>
+                    <ul class="ps-3" style="list-style-type: disc; margin: 0; padding-left: 1.2rem;">
+                        <li class="mb-2"><b class="text-white">Pressure Tendency:</b> <span style="color:#F9FAFB">1h / 3h / 6h change — signals approaching frontal systems.</span></li>
+                        <li class="mb-2"><b class="text-white">Cloud Cover + Dew Point:</b> <span style="color:#F9FAFB">From 10-min endpoint — critical for fog and snow detection.</span></li>
+                        <li class="mb-2"><b class="text-white">Wind Decomposition:</b> <span style="color:#F9FAFB">U/V components derived from speed and direction.</span></li>
+                        <li class="mb-2"><b class="text-white">Coastal Distance:</b> <span style="color:#F9FAFB">Static feature encoding proximity to coastline — differentiates maritime vs inland cities.</span></li>
+                        <li class="mb-0"><b class="text-white">Seasonal Encoding:</b> <span style="color:#F9FAFB">Day-of-year sine/cosine captures annual temperature cycles.</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="translator-card">
+                <div class="column-header mb-3">
+                    <span class="column-label fw-bold" style="color:#F9FAFB">Evaluation</span>
+                </div>
+                <div class="translator-box doc-box">
+                    <h6 class="doc-accent"><i class="bi bi-bar-chart-line"></i> Model Performance</h6>
+                    <p>Evaluated on a held-out winter test set (Nov 2025 → Mar 2026). Hover the <i class="bi bi-info-circle"></i> buttons to see per-horizon metrics.</p>
+
+                    <!-- Temperature Model -->
+                    <div class="d-flex align-items-center justify-content-between mt-3 mb-1">
+                        <span style="color:#60A5FA; font-weight:600; font-size:0.9rem;"><i class="bi bi-thermometer-half me-1"></i>Temperature Model (XGBoost)</span>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <div class="metric-info-wrap">
+                            <span class="metric-horizon">+6h</span>
+                            <button class="info-btn" tabindex="0">
+                                <i class="bi bi-info-circle"></i>
+                                <div class="metric-tooltip">
+                                    <div class="tt-title">Temperature +6h</div>
+                                    <div class="tt-row"><span>RMSE</span><span class="tt-val">1.40°C</span></div>
+                                    <div class="tt-row"><span>MAE</span><span class="tt-val">0.99°C</span></div>
+                                    <div class="tt-row"><span>R²</span><span class="tt-val">0.98</span></div>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="metric-info-wrap">
+                            <span class="metric-horizon">+12h</span>
+                            <button class="info-btn" tabindex="0">
+                                <i class="bi bi-info-circle"></i>
+                                <div class="metric-tooltip">
+                                    <div class="tt-title">Temperature +12h</div>
+                                    <div class="tt-row"><span>RMSE</span><span class="tt-val">2.19°C</span></div>
+                                    <div class="tt-row"><span>MAE</span><span class="tt-val">1.59°C</span></div>
+                                    <div class="tt-row"><span>R²</span><span class="tt-val">0.95</span></div>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="metric-info-wrap">
+                            <span class="metric-horizon">+24h</span>
+                            <button class="info-btn" tabindex="0">
+                                <i class="bi bi-info-circle"></i>
+                                <div class="metric-tooltip">
+                                    <div class="tt-title">Temperature +24h</div>
+                                    <div class="tt-row"><span>RMSE</span><span class="tt-val">3.32°C</span></div>
+                                    <div class="tt-row"><span>MAE</span><span class="tt-val">2.41°C</span></div>
+                                    <div class="tt-row"><span>R²</span><span class="tt-val">0.89</span></div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Code Model -->
+                    <div class="d-flex align-items-center justify-content-between mt-3 mb-1">
+                        <span style="color:#34D399; font-weight:600; font-size:0.9rem;"><i class="bi bi-cloud-sun me-1"></i>Weather Code Model (LightGBM)</span>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <div class="metric-info-wrap">
+                            <span class="metric-horizon">+3h</span>
+                            <button class="info-btn" tabindex="0">
+                                <i class="bi bi-info-circle"></i>
+                                <div class="metric-tooltip">
+                                    <div class="tt-title">Weather Code +3h (macro F1: 0.58)</div>
+                                    <table class="tt-table">
+                                        <tr><th></th><th>Prec</th><th>Rec</th><th>F1</th></tr>
+                                        <tr><td style="color:#FBBF24">☀ Clear</td><td>0.85</td><td>0.62</td><td>0.72</td></tr>
+                                        <tr><td style="color:#60A5FA">🌧 Rain</td><td>0.37</td><td>0.55</td><td>0.44</td></tr>
+                                        <tr><td style="color:#A7F3D0">❄ Snow</td><td>0.50</td><td>0.73</td><td>0.59</td></tr>
+                                    </table>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="metric-info-wrap">
+                            <span class="metric-horizon">+6h</span>
+                            <button class="info-btn" tabindex="0">
+                                <i class="bi bi-info-circle"></i>
+                                <div class="metric-tooltip">
+                                    <div class="tt-title">Weather Code +6h (macro F1: 0.51)</div>
+                                    <table class="tt-table">
+                                        <tr><th></th><th>Prec</th><th>Rec</th><th>F1</th></tr>
+                                        <tr><td style="color:#FBBF24">☀ Clear</td><td>0.81</td><td>0.51</td><td>0.62</td></tr>
+                                        <tr><td style="color:#60A5FA">🌧 Rain</td><td>0.30</td><td>0.44</td><td>0.35</td></tr>
+                                        <tr><td style="color:#A7F3D0">❄ Snow</td><td>0.44</td><td>0.73</td><td>0.55</td></tr>
+                                    </table>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="metric-info-wrap">
+                            <span class="metric-horizon">+12h</span>
+                            <button class="info-btn" tabindex="0">
+                                <i class="bi bi-info-circle"></i>
+                                <div class="metric-tooltip">
+                                    <div class="tt-title">Weather Code +12h (macro F1: 0.42)</div>
+                                    <table class="tt-table">
+                                        <tr><th></th><th>Prec</th><th>Rec</th><th>F1</th></tr>
+                                        <tr><td style="color:#FBBF24">☀ Clear</td><td>0.76</td><td>0.36</td><td>0.49</td></tr>
+                                        <tr><td style="color:#60A5FA">🌧 Rain</td><td>0.20</td><td>0.37</td><td>0.26</td></tr>
+                                        <tr><td style="color:#A7F3D0">❄ Snow</td><td>0.40</td><td>0.77</td><td>0.52</td></tr>
+                                    </table>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="translator-card">
+                <div class="column-header mb-3">
+                    <span class="column-label fw-bold" style="color:#F9FAFB">Pipeline</span>
+                </div>
+                <div class="translator-box doc-box">
+                    <h6 class="doc-accent"><i class="bi bi-arrow-repeat"></i> Hourly Worker</h6>
+                    <p><b class="text-white">GitHub Actions</b> triggers every hour</p>
+                    <p>Each run fetches the last 8 hours of observations (for lag features), aggregates 10 stations into 6 cities, engineers features, and runs inference on the latest row per city.</p>
+                    <p class="mb-0"><b class="text-white">FMI Harmonie NWP</b> forecasts are fetched alongside and stored in MongoDB for side-by-side comparison on the dashboard.</p>
+                </div>
+            </div>
+
+            <div class="translator-card">
+                <div class="column-header mb-3">
+                    <span class="column-label fw-bold" style="color:#F9FAFB">Infrastructure</span>
+                </div>
+                <div class="translator-box doc-box">
+                    <h6 class="doc-accent"><i class="bi bi-database"></i> Stack</h6>
+                    <p><b class="text-white">MongoDB Atlas:</b> Stores one document per city per hour. Each document contains current observations, our model predictions, and FMI Harmonie forecasts.</p>
+                    <p><b class="text-white">Azure App Service:</b> Flask app served from a Docker container, reads latest city documents from MongoDB and renders the dashboard.</p>
+                    <p class="mb-0"><b class="text-white">fmiopendata:</b> Open-source Python library for WFS queries — <a href="https://github.com/pnuu/fmiopendata" target="_blank" style="color:#60A5FA">github.com/pnuu/fmiopendata</a></p>
+                </div>
+            </div>
+
             </div>
         </div>
 
     </div>
-</div>
+</main>
 
-        </div>
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
