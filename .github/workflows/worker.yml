@@ -2,8 +2,8 @@ name: Hourly Weather Inference
 
 on:
   schedule:
-    # Runs every hour
-    - cron: '0 * * * *'
+    # Testing
+    - cron: '50 * * * *'
   workflow_dispatch: 
 
 jobs:
