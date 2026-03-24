@@ -1,92 +1,120 @@
 import os
 import logging
-from flask import Flask, render_template, jsonify
-from pymongo import MongoClient
-import pytz
+import requests, uuid
+from flask import Flask, render_template, request, jsonify
+from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_only_change_in_azure')
+
+# Security Config
 talisman = Talisman(app, content_security_policy=None, force_https=True)
 
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-MONGO_URI = os.getenv("MONGO_URI")
-if not MONGO_URI:
-    logging.error("MONGO_URI not found in environment variables!")
+# CSRF Protection
+csrf = CSRFProtect(app)
 
-client = MongoClient(MONGO_URI)
-db = client.weather_db
+# Rate Limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
-CODE_LABELS = {0: "Clear", 1: "Rain", 2: "Snow"}
-CODE_ICONS  = {0: "bi-sun",  1: "bi-cloud-rain", 2: "bi-snow"}
+# Azure Translator Config
+AZURE_KEY = os.environ.get("AZURE_TRANSLATOR_KEY")
+AZURE_LOCATION = os.environ.get("AZURE_TRANSLATOR_LOCATION")
+AZURE_ENDPOINT = "https://api.cognitive.microsofttranslator.com/"
 
-def format_time(utc_dt):
+if not AZURE_KEY:
+    logging.error("AZURE_TRANSLATOR_KEY not found in environment variables!")
+if not AZURE_LOCATION:
+    logging.error("AZURE_TRANSLATOR_LOCATION not found in environment variables!")
+
+LANGUAGES = ['en', 'fi', 'vi', 'zh-Hans']
+
+
+def translate(text, to_lang, from_lang=None):
     try:
-        helsinki_tz = pytz.timezone('Europe/Helsinki')
-        local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(helsinki_tz)
-        return local_dt.strftime('%Y-%m-%d %H:%M')
+        url = f"{AZURE_ENDPOINT}translate"
+        params = {"api-version": "3.0", "to": to_lang}
+        if from_lang:
+            params["from"] = from_lang
+        if to_lang == "zh-Hans":
+            params["toScript"] = "Latn"  # Pinyin romanization
+
+        headers = {
+            "Ocp-Apim-Subscription-Key": AZURE_KEY,
+            "Ocp-Apim-Subscription-Region": AZURE_LOCATION,
+            "Content-Type": "application/json",
+            "X-ClientTraceId": str(uuid.uuid4())
+        }
+        response = requests.post(url, params=params, headers=headers, json=[{"text": text}])
+        response.raise_for_status()
+        result = response.json()[0]["translations"][0]
+
+        if to_lang == "zh-Hans" and "transliteration" in result:
+            return f"{result['text']}\n{result['transliteration']['text']}"
+
+        return result["text"]
+
     except Exception as e:
-        logging.error(f"Time formatting error: {e}")
-        return "Time Unavailable"
+        logging.error(f"Translation error ({from_lang} -> {to_lang}): {e}")
+        raise
+
+
+# Custom Error Handler for Rate Limiting
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "You are translating too fast! Please wait a moment before trying again."}), 429
 
 
 @app.route('/')
-def index():
+def home():
+    return render_template('index.html')
+
+
+@app.route('/api/translate', methods=['POST'])
+@limiter.limit("40 per minute")
+def api_translate():
     try:
-        cities = db.forecastV2.distinct("city")
-        latest_forecasts = []
+        query = request.get_json()
+        original_text = query.get("text")
+        source_lang = query.get("source_lang")
 
-        for city in cities:
-            forecast = db.forecastV2.find_one(
-                {"city": city},
-                sort=[("timestamp", -1)]
-            )
-            if forecast:
-                forecast['display_time'] = format_time(forecast['timestamp'])
+        if not original_text or not source_lang:
+            return jsonify({"error": "Missing Data!"}), 400
 
-                # Attach code labels for template
-                forecast['current']['code_label'] = CODE_LABELS.get(forecast['current'].get('code', 0), "Clear")
-                forecast['current']['code_icon']  = CODE_ICONS.get(forecast['current'].get('code', 0), "bi-sun")
+        results = {}
+        for lang in LANGUAGES:
+            if lang != source_lang:
+                translated = translate(original_text, from_lang=source_lang, to_lang=lang)
+                results[lang] = translated
+                logging.info(f"Translated '{original_text}' ({source_lang}) -> '{translated}' ({lang})")
 
-                for h in ['3h', '6h', '12h']:
-                    code = forecast.get('code_forecast', {}).get(h, 0)
-                    forecast['code_forecast'][f'{h}_label'] = CODE_LABELS.get(code, "Clear")
-                    forecast['code_forecast'][f'{h}_icon']  = CODE_ICONS.get(code, "bi-sun")
+        return jsonify(results)
 
-                for h in ['6h', '12h', '24h']:
-                    fmi = forecast.get('fmi_forecast', {}).get(h, {})
-                    if fmi:
-                        code = fmi.get('code', 0)
-                        forecast['fmi_forecast'][h]['code_label'] = CODE_LABELS.get(code, "Clear")
-                        forecast['fmi_forecast'][h]['code_icon']  = CODE_ICONS.get(code, "bi-sun")
-
-                latest_forecasts.append(forecast)
-
-        # Sort cities alphabetically
-        latest_forecasts.sort(key=lambda x: x['city'])
-
-        return render_template('index.html', forecasts=latest_forecasts)
     except Exception as e:
-        logging.error(f"Error fetching forecasts: {e}")
-        return render_template('index.html', forecasts=[], error="Could not retrieve data.")
+        logging.error(f"Translation request failed: {e}")
+        return jsonify({"error": "Translation service unavailable. Please try again."}), 500
 
 
 @app.route('/healthz', methods=['GET'])
 @talisman(force_https=False)
 def health_check():
     try:
-        if client is None:
-            raise Exception('Database client not initialized')
-        result = client.admin.command('ping')
-        if result.get('ok') == 1.0:
-            return jsonify(status="healthy", database="connected"), 200
-        else:
-            return jsonify(status="unhealthy", reason="database_ping_failed"), 500
+        if not AZURE_KEY or not AZURE_LOCATION:
+            raise Exception("Azure Translator credentials not configured")
+        return jsonify(status="healthy", service="azure-translator"), 200
     except Exception as e:
         logging.error(f"Health check failed: {e}")
         return jsonify(status="unhealthy", reason=str(e)), 500
