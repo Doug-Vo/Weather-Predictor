@@ -139,6 +139,14 @@
         .tt-table td { padding: 0.25rem 0.3rem; text-align: center; }
         .tt-table tr td:first-child { text-align: left; }
 
+        .hover-bounce {
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .hover-bounce:hover {
+            transform: translateY(-8px); /* Moves it up 8 pixels */
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             .app-header { padding: 0.75rem 1rem; }
@@ -407,6 +415,11 @@
                 </div>
                 <i class="bi bi-box-arrow-up-right ms-auto" style="font-size:0.9rem; color:#9CA3AF;"></i>
             </a>
+
+            <div class="mb-4 hover-bounce">
+                <img src="image.png" alt="Weather Predictor Pipeline" class="img-fluid" 
+                    style="border-radius: 0.75rem; border: 1px solid #374151; width: 100%;">
+            </div>
 
             <div class="grid-2col">
 

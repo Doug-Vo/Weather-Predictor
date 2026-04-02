@@ -107,6 +107,11 @@ def api_translate():
         logging.error(f"Translation request failed: {e}")
         return jsonify({"error": "Translation service unavailable. Please try again."}), 500
 
+from flask import send_from_directory
+
+@app.route('/image.png')
+def serve_image():
+    return send_from_directory('.', 'image.png')
 
 @app.route('/healthz', methods=['GET'])
 @talisman(force_https=False)

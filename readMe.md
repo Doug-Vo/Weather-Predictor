@@ -10,10 +10,11 @@ A machine learning pipeline that predicts Finnish weather transitions using real
 
 ## Version History
 
-| Version | Date | Models | Horizons | Notable Changes |
-|---------|------|--------|----------|-----------------|
-| **v2** | 2026-03-06 | XGBoost (temp) + LightGBM (code) | +3h, +6h, +12h, +24h | Weather code classification (Clear / Rain / Snow), FMI Harmonie NWP comparison, dual WFS endpoints, gap-split evaluation |
-| **v1** | 2026-03-04 | XGBoost (temp) | +1h, +2h, +3h | Initial proof-of-concept, temperature-only forecasting, single WFS endpoint |
+| Version | Date  | Notable Changes |
+|---------|------|-----------------|
+| **v3** | 2026-04-02 | Minor Bug Fix and Documentation |
+| **v2** | 2026-03-06 | Weather code classification (Clear / Rain / Snow), FMI Harmonie NWP comparison, dual WFS endpoints, gap-split evaluation |
+| **v1** | 2026-03-04 | Initial proof-of-concept, temperature-only forecasting, single WFS endpoint |
 
 ![alt text](image.png)
 
